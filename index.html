@@ -1,0 +1,654 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Creus Wiki de Regulación Automática</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* For custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-slate-100">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki de Regulación y Control Automático (Creus Cap. 9 & 11)</title>
+    <!-- Carga de Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para el diseño formal */
+        :root {
+            --primary-color: #1f2937; /* Gris oscuro para formalidad */
+            --accent-color: #3b82f6; /* Azul para acentos */
+            --bg-color: #f9fafb; /* Fondo claro */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+        }
+
+        .wiki-header {
+            background-color: var(--primary-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+            max-width: 300px;
+        }
+
+        .sidebar-item {
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background-color: rgba(59, 130, 246, 0.1); /* light blue hover */
+            color: var(--accent-color);
+        }
+
+        .sidebar-item.active {
+            background-color: var(--accent-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Gestión de la transición de contenido */
+        .content-section {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            display: none; /* Inicialmente oculto */
+        }
+
+        .content-section.active {
+            display: block; /* Se muestra al estar activo */
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .chapter-title {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--accent-color);
+            padding-bottom: 8px;
+            margin-bottom: 24px;
+            font-weight: 700;
+        }
+
+        /* Estilo para acordeón/secciones plegables */
+        .accordion-header {
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-radius: 4px;
+        }
+
+        .accordion-header:hover {
+            background-color: #f3f4f6;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+            padding: 0 16px;
+        }
+
+        .accordion-content.open {
+            max-height: 500px; /* Ajustar según sea necesario para el contenido */
+            padding: 16px;
+        }
+
+        /* Responsive Sidebar Toggle */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 20;
+                padding-top: 80px; /* Espacio para el header */
+                box-shadow: 4px 0 6px rgba(0, 0, 0, 0.1);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .content-area {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Fijo y Responsivo --><header class="wiki-header p-4 fixed w-full z-10 text-white flex justify-between items-center">
+        <div class="text-2xl font-bold tracking-tight">
+            Creus Wiki: Automatización
+        </div>
+        <button id="menu-toggle" class="lg:hidden p-2 rounded-md hover:bg-gray-700 focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+    </header>
+
+    <!-- Contenido Principal --><main class="flex pt-16 h-screen">
+
+        <!-- Sidebar de Navegación --><nav id="sidebar" class="sidebar bg-white h-full overflow-y-auto p-4 flex-shrink-0 lg:block lg:translate-x-0 w-full">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Índice de Contenidos</h3>
+            <div id="sidebar-nav">
+                <!-- Capítulo 9 --><p class="text-gray-500 uppercase text-xs mt-4 mb-2">Capítulo 9</p>
+                <div class="sidebar-item active" data-target="c9_intro">Regulación Automática</div>
+                <div class="sidebar-item" data-target="c9_lazo">Lazo de Control Automático</div>
+                <div class="sidebar-item" data-target="c9_tipos_ctrl">Tipos de Controladores</div>
+                <div class="sidebar-item" data-target="c9_tecnologia">Controladores: Tecnología y Ajuste</div>
+                <div class="sidebar-item" data-target="c9_avanzado">Tipos Avanzados de Control</div>
+
+                <!-- Capítulo 11 --><p class="text-gray-500 uppercase text-xs mt-4 mb-2">Capítulo 11</p>
+                <div class="sidebar-item" data-target="c11_intro">Esquemas Típicos: Introducción</div>
+                <div class="sidebar-item" data-target="c11_calderas">Calderas de Vapor</div>
+                <div class="sidebar-item" data-target="c11_secaderos">Secaderos y Evaporadores</div>
+                <div class="sidebar-item" data-target="c11_hornos">Hornos Industriales</div>
+                <div class="sidebar-item" data-target="c11_destilacion">Columnas de Destilación</div>
+                <div class="sidebar-item" data-target="c11_intercambiadores">Intercambiadores de Calor</div>
+                <div class="sidebar-item" data-target="c11_reactores">Reactores Nucleares</div>
+            </div>
+        </nav>
+
+        <!-- Área de Contenido Principal --><section class="content-area flex-grow p-6 lg:p-10 overflow-y-auto bg-gray-50">
+            <div class="max-w-4xl mx-auto">
+
+                <!-- Botón de Búsqueda (Funcionalidad extra) --><div class="mb-6">
+                    <input type="text" id="search-bar" placeholder="Buscar en la Wiki..." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-accent-color focus:border-accent-color transition duration-200 shadow-sm">
+                </div>
+
+                <!-- Contenido del Capítulo 9 --><!-- C9: Introducción --><article id="c9_intro" class="content-section active bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Capítulo 9: Regulación Automática</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Introducción a la Regulación Automática</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        La regulación automática es la técnica esencial que permite mantener constantes determinadas variables físicas en los procesos industriales (como presión, caudal, nivel, temperatura, pH, velocidad o humedad), sin la intervención directa y constante de un operador. Este control se logra mediante una combinación de instrumentos que operan conjuntamente, dando forma a lo que se conoce como el <strong>lazo de control</strong>.
+                    </p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Diagrama conceptual de un proceso industrial con control automático.</p>
+                    </div>
+                    <div class="p-4 bg-blue-50 border-l-4 border-accent-color rounded-lg">
+                        <p class="font-medium text-gray-800">Objetivo:</p>
+                        <p class="text-gray-700">Mantener la variable del proceso en el valor deseado (Consigna) de forma precisa y estable.</p>
+                    </div>
+                </article>
+
+                <!-- C9: Lazo de Control --><article id="c9_lazo" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Lazo de Control Automático</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Elementos de un Lazo de Control</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Un lazo de control es la arquitectura básica que permite la automatización, asegurando que la corrección necesaria se ejecute automáticamente. Se compone de cinco elementos clave:
+                    </p>
+
+                    <!-- Acordeón de Elementos del Lazo --><div class="space-y-3" id="accordion-lazo">
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="accordion-header p-4 bg-gray-100 flex justify-between items-center text-lg font-medium text-gray-800" data-id="e_medida">
+                                <span>1. Elemento de Medida (Sensor)</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                Sensor que capta la magnitud física real del proceso. (Ej: termopar para temperatura).
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="accordion-header p-4 bg-gray-100 flex justify-between items-center text-lg font-medium text-gray-800" data-id="e_transmisor">
+                                <span>2. Transmisor</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                Convierte la señal del sensor a una señal estándar industrial (ej: 4-20 mA o 3-15 psi).
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="accordion-header p-4 bg-gray-100 flex justify-between items-center text-lg font-medium text-gray-800" data-id="e_controlador">
+                                <span>3. Controlador</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                Compara el valor medido con el valor deseado (consigna) y calcula la acción correctora necesaria. Es el "cerebro" del lazo.
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="accordion-header p-4 bg-gray-100 flex justify-between items-center text-lg font-medium text-gray-800" data-id="e_final">
+                                <span>4. Elemento Final de Control (Actuador)</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                Actuador que ejecuta físicamente la acción correctiva calculada (ej: una válvula de control que abre o cierra el flujo).
+                            </div>
+                        </div>
+
+                        <div class="border rounded-lg overflow-hidden">
+                            <div class="accordion-header p-4 bg-gray-100 flex justify-between items-center text-lg font-medium text-gray-800" data-id="e_proceso">
+                                <span>5. Proceso</span>
+                                <span class="arrow-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">
+                                La parte de la planta industrial donde se realiza la variable a controlar (ej: un tanque, un horno, una tubería).
+                            </div>
+                        </div>
+                    </div>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Diagrama de un lazo de control cerrado con sus elementos principales.</p>
+                    </div>
+                    <h3 class="text-xl font-semibold mt-8 mb-4 border-t pt-4">Esquemas Básicos</h3>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>
+                            <strong class="text-accent-color">Lazo Abierto:</strong> El operador ajusta manualmente el actuador. No existe una corrección automática basada en el valor medido.
+                        </li>
+                        <li>
+                            <strong class="text-accent-color">Lazo Cerrado (Retroalimentación):</strong> El sistema compara constantemente el valor medido con la consigna, ejecutando una corrección automática. Es el más usado por su alta precisión.
+                        </li>
+                    </ul>
+                </article>
+
+                <!-- C9: Tipos de Controladores --><article id="c9_tipos_ctrl" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Tipos de Controladores Automáticos</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Clasificación de las Acciones de Control</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Los controladores automáticos actúan de diferentes maneras para minimizar el error entre la variable medida y la consigna.
+                    </p>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- Control Todo-Nada (On-Off) --><div class="p-4 border rounded-lg hover:shadow-md transition duration-200">
+                            <h3 class="text-xl font-semibold text-accent-color mb-2">Control Todo-Nada (On-Off)</h3>
+                            <p class="text-sm text-gray-600">El actuador se posiciona completamente abierto o cerrado. Simple y económico, pero provoca oscilaciones.</p>
+                            <p class="text-sm mt-2 font-medium">Uso: Procesos lentos o donde no se requiere gran precisión.</p>
+                        </div>
+                        <!-- Control Proporcional (P) --><div class="p-4 border rounded-lg hover:shadow-md transition duration-200">
+                            <h3 class="text-xl font-semibold text-accent-color mb-2">Control Proporcional (P)</h3>
+                            <p class="text-sm text-gray-600">La acción correctora es proporcional a la magnitud del error. Regula de forma continua, aunque puede dejar un pequeño <strong>error permanente (offset)</strong>.</p>
+                            <p class="text-sm mt-2 font-medium">Uso: Permite regulación continua.</p>
+                        </div>
+                        <!-- Control Proporcional-Integral (PI) --><div class="p-4 border rounded-lg hover:shadow-md transition duration-200">
+                            <h3 class="text-xl font-semibold text-accent-color mb-2">Control Proporcional-Integral (PI)</h3>
+                            <p class="text-sm text-gray-600">Combina acción Proporcional con una corrección acumulativa (Integral). <strong>Elimina el offset</strong> y proporciona mayor precisión.</p>
+                            <p class="text-sm mt-2 font-medium">Uso: Ideal para control de temperatura.</p>
+                        </div>
+                        <!-- Control Proporcional-Derivativo (PD) --><div class="p-4 border rounded-lg hover:shadow-md transition duration-200">
+                            <h3 class="text-xl font-semibold text-accent-color mb-2">Control Proporcional-Derivativo (PD)</h3>
+                            <p class="text-sm text-gray-600">Corrige anticipadamente reaccionando a la <strong>velocidad de cambio</strong> del error (Derivativo). Mejora la respuesta rápida.</p>
+                            <p class="text-sm mt-2 font-medium">Uso: Procesos con grandes retardos.</p>
+                        </div>
+                        <!-- Control Proporcional-Integral-Derivativo (PID) --><div class="md:col-span-2 p-4 border rounded-lg hover:shadow-md transition duration-200 bg-blue-50">
+                            <h3 class="text-2xl font-bold text-primary-color mb-2">Control PID (El Sistema Más Completo)</h3>
+                            <p class="text-sm text-gray-600">Combina las tres acciones: P (Respuesta), I (Eliminación del Offset) y D (Anticipación). Ofrece control rápido, preciso y estable.</p>
+                            <p class="text-sm mt-2 font-bold text-red-600">Clave: El ajuste de sus parámetros es esencial para evitar oscilaciones o tiempos de estabilización excesivos.</p>
+                        </div>
+                    </div>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Gráfica comparativa de la respuesta de controladores P, PI, y PID.</p>
+                    </div>
+                </article>
+
+                <!-- C9: Tecnología y Ajuste --><article id="c9_tecnologia" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Tecnología y Ajuste de Controladores</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Clasificación según Tecnología</h2>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Neumáticos:</strong> Utilizan aire comprimido. Ideales para ambientes explosivos o con riesgo eléctrico.</li>
+                        <li><strong class="text-accent-color">Electrónicos (Analógicos):</strong> Basados en circuitos electrónicos para las acciones de ganancia (P), integración (I) y derivación (D).</li>
+                        <li><strong class="text-accent-color">Digitales:</strong> Equipados con microprocesadores y algoritmos avanzados. Son el estándar actual, permitiendo <strong>autoajuste</strong> y diagnóstico.</li>
+                    </ul>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Representación de un controlador digital moderno.</p>
+                    </div>
+                    <h3 class="text-xl font-semibold mt-8 mb-4 border-t pt-4">Ajuste (Tuning) de Controladores PID</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        El proceso de <strong>ajuste (tuning)</strong> de los parámetros de control (Kp, Ti y Td) es crucial para un desempeño óptimo.
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 mt-4">
+                        <li><strong class="font-medium">Manual:</strong> Basado en prueba y error.</li>
+                        <li><strong class="font-medium">Métodos de Criterio:</strong> Uso de reglas empíricas como el método de <strong>Ziegler-Nichols</strong>.</li>
+                        <li><strong class="font-medium">Autoajuste:</strong> Característica de los controladores digitales que determina los parámetros óptimos automáticamente.</li>
+                    </ul>
+                </article>
+
+                <!-- C9: Control Avanzado --><article id="c9_avanzado" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Tipos Avanzados de Control</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Esquemas de Control Complejos</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Para procesos complejos, se emplean estrategias que mejoran el rendimiento usando múltiples lazos o lógica predictiva:
+                    </p>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Control en Cascada:</strong> Dos o más controladores actúan en serie. Un controlador principal ajusta la consigna de un controlador secundario. Útil para manejar perturbaciones rápidas.</li>
+                        <li><strong class="text-accent-color">Control de Relación:</strong> Mantiene una proporción fija entre dos variables (Ej: aire/combustible). Útil en mezclas y dosificaciones.</li>
+                        <li><strong class="text-accent-color">Control Anticipativo (Feedforward):</strong> Prevé el efecto de una perturbación antes de que se manifieste, mejorando la respuesta.</li>
+                        <li><strong class="text-accent-color">Control Selectivo y Discontinuo:</strong> Aplica la acción solo cuando se requiere (útil en procesos batch).</li>
+                    </ul>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Diagrama de un esquema de control en cascada.</p>
+                    </div>
+                    <h3 class="text-xl font-semibold mt-8 mb-4 border-t pt-4">Métodos Modernos</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        La tecnología incluye sistemas avanzados de gestión de planta:
+                    </p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 mt-4">
+                        <li>Control Distribuido (DCS)</li>
+                        <li>Supervisión por Computadora (SCADA)</li>
+                        <li>Control Óptimo, Adaptativo, Predictivo.</li>
+                        <li>Sistemas Expertos (Inteligencia Artificial para diagnóstico).</li>
+                    </ul>
+                </article>
+
+                <!-- Contenido del Capítulo 11 --><!-- C11: Introducción Esquemas --><article id="c11_intro" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Capítulo 11: Esquemas Típicos de Control Industrial</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Objetivo y Aplicación</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Este capítulo ilustra la aplicación práctica de los lazos de control en equipos industriales específicos, asegurando que los procesos sean seguros, eficientes y precisos.
+                    </p>
+                    <div class="p-4 bg-yellow-50 border-l-4 border-yellow-500 rounded-lg">
+                        <p class="font-medium text-gray-800">Función de los Diagramas:</p>
+                        <p class="text-gray-700">El libro Creus incluye diagramas de flujo de control que muestran visualmente la interacción entre sensores, controladores y actuadores, facilitando el entendimiento.</p>
+                    </div>
+                </article>
+
+                <!-- C11: Calderas --><article id="c11_calderas" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Calderas de Vapor</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Control Esencial para Producción de Energía</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Las calderas requieren un control riguroso debido a los altos riesgos asociados con la presión y el nivel del agua.
+                    </p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Esquema de control de una caldera de vapor.</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Control de Combustión:</strong> Regula la mezcla aire/combustible para mantener la eficiencia.</li>
+                        <li><strong class="text-accent-color">Control de Nivel de Agua:</strong> Vital. Sensores de nivel y válvulas automáticas previenen daños por bajo nivel o desborde.</li>
+                        <li><strong class="text-accent-color">Seguridad de Llama:</strong> Sensores cortan inmediatamente el suministro de combustible si la llama se pierde, previniendo explosiones.</li>
+                    </ul>
+                </article>
+
+                <!-- C11: Secaderos y Evaporadores --><article id="c11_secaderos" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Secaderos y Evaporadores</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Control de Calidad y Eficiencia</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        La automatización controla la temperatura del aire y el nivel de humedad para asegurar la calidad final del producto.
+                    </p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Representación de un secadero industrial con lazos de control.</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Sensores:</strong> Utilizan sensores de temperatura y humedad en todo el ciclo.</li>
+                        <li><strong class="text-accent-color">Controlador Típico:</strong> Se emplea PID para mantener los parámetros dentro de rangos precisos.</li>
+                        <li><strong class="text-accent-color">Seguridad:</strong> El sistema detecta temperaturas excesivas y activa alarmas o el apagado seguro.</li>
+                    </ul>
+                </article>
+
+                <!-- C11: Hornos Industriales --><article id="c11_hornos" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Hornos Industriales</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Regulación Térmica y Velocidad</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Los hornos requieren sistemas automáticos para regular la temperatura y el tiempo de proceso.
+                    </p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Diagrama de control de temperatura de un horno industrial multi-zona.</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Regulación Multi-Zona:</strong> Monitoreo y regulación de la temperatura en varias secciones, cada una con su lazo de control.</li>
+                        <li><strong class="text-accent-color">Control de la Velocidad:</strong> Regulación del tiempo de permanencia del material para asegurar el tratamiento térmico deseado.</li>
+                    </ul>
+                </article>
+
+                <!-- C11: Columnas de Destilación --><article id="c11_destilacion" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Columnas de Destilación</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Separación Eficiente en Procesos Petroquímicos</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        La eficiencia de la separación depende del estricto control de Temperatura, Presión y Nivel.
+                    </p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Esquema de una columna de destilación con sus lazos de control.</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Variables Críticas:</strong> Temperatura, Presión y Nivel.</li>
+                        <li><strong class="text-accent-color">Estrategia Multilazo:</strong> Uso de múltiples lazos de control coordinados para las distintas etapas.</li>
+                    </ul>
+                </article>
+
+                <!-- C11: Intercambiadores de Calor --><article id="c11_intercambiadores" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Intercambiadores de Calor</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Optimización Energética</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Estos sistemas regulan las temperaturas de entrada y salida para garantizar la eficiencia energética.
+                    </p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Diagrama de control de un intercambiador de calor.</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Control:</strong> Ajuste de válvulas automáticas en respuesta a la señal de los sensores de temperatura y flujo.</li>
+                        <li><strong class="text-accent-color">Realimentación:</strong> Los lazos de control PI/PID mantienen el funcionamiento estable.</li>
+                    </ul>
+                </article>
+
+                <!-- C11: Reactores Nucleares --><article id="c11_reactores" class="content-section bg-white p-6 rounded-xl shadow-lg mb-8">
+                    <h1 class="chapter-title text-3xl mb-4">Reactores en Centrales Nucleares</h1>
+                    <h2 class="text-2xl font-semibold mb-4">Máxima Precisión y Seguridad Absoluta</h2>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        Estas instalaciones exigen los sistemas de control más avanzados, donde la seguridad es la prioridad.
+                    </p>
+                    <div class="my-4 text-center">
+                        <p class="text-sm text-gray-500 mb-2">Esquema de un reactor nuclear con sus sistemas de seguridad y control redundantes.</p>
+                    </div>
+                    <ul class="list-disc list-inside space-y-3 text-gray-700">
+                        <li><strong class="text-accent-color">Regulación Crítica:</strong> Control preciso de la temperatura del reactor y el caudal de refrigerante.</li>
+                        <li><strong class="text-accent-color">Sistemas Redundantes:</strong> Controles automáticos de emergencia para actuar rápidamente.</li>
+                        <li><strong class="text-accent-color">Lógica de Seguridad:</strong> Sistemas centralizados que detectan riesgos y toman acciones preventivas en segundos.</li>
+                    </ul>
+                </article>
+
+                <footer class="text-center text-gray-500 py-8 text-sm border-t mt-12">
+                    &copy; 2025 Creus Wiki. Información basada en el Capítulo 9 y 11 del libro de Automatización.
+                </footer>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const navItems = document.querySelectorAll('.sidebar-item');
+            const sections = document.querySelectorAll('.content-section');
+            const searchBar = document.getElementById('search-bar');
+            
+            // 1. Almacenar el contenido original de todas las secciones
+            sections.forEach(section => {
+                section.setAttribute('data-original-html', section.innerHTML);
+            });
+
+            // Función para re-inicializar los oyentes de eventos del acordeón
+            const reInitializeAccordionListeners = () => {
+                document.querySelectorAll('.accordion-header').forEach(header => {
+                    // Clonar el elemento para remover el oyente anterior
+                    const new_header = header.cloneNode(true);
+                    header.parentNode.replaceChild(new_header, header);
+                    
+                    new_header.addEventListener('click', function() {
+                        const content = this.nextElementSibling;
+                        const arrow = this.querySelector('.arrow-icon');
+        
+                        if (content.classList.contains('open')) {
+                            content.classList.remove('open');
+                            arrow.textContent = '▼';
+                        } else {
+                            content.classList.add('open');
+                            arrow.textContent = '▲';
+                        }
+                    });
+                });
+            };
+            
+            // Inicializar oyentes del acordeón
+            reInitializeAccordionListeners();
+
+
+            // Función para restaurar el contenido original sin resaltado
+            const restoreOriginalContent = () => {
+                sections.forEach(section => {
+                    const originalHtml = section.getAttribute('data-original-html');
+                    if (originalHtml) {
+                        section.innerHTML = originalHtml;
+                    }
+                });
+                reInitializeAccordionListeners(); // Necesario después de restaurar innerHTML
+            };
+
+            // Función para mostrar la sección activa con transición
+            const showSection = (targetId) => {
+                let found = false;
+                sections.forEach(section => {
+                    if (section.id === targetId) {
+                        section.style.display = 'block';
+                        setTimeout(() => {
+                            section.classList.add('active');
+                        }, 10); 
+                        found = true;
+                    } else {
+                        section.classList.remove('active');
+                        setTimeout(() => {
+                             if (!section.classList.contains('active')) {
+                                section.style.display = 'none';
+                             }
+                        }, 500); 
+                    }
+                });
+
+                if (found) {
+                    const contentArea = document.querySelector('.content-area');
+                    contentArea.scrollTop = 0;
+                }
+            };
+
+            // 2. Control de Navegación y Transiciones
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+
+                    // 1. Desactivar el filtro de búsqueda y restaurar contenido
+                    searchBar.value = '';
+                    restoreOriginalContent(); 
+                    
+                    // 2. Activar item en la sidebar y mostrar contenido
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    showSection(targetId);
+
+                    // 3. Ocultar sidebar en móvil
+                    if (window.innerWidth < 1024) {
+                        sidebar.classList.remove('open');
+                    }
+                });
+            });
+
+            // Inicializar mostrando la primera sección
+            const firstTarget = navItems[0]?.getAttribute('data-target');
+            if (firstTarget) {
+                showSection(firstTarget);
+            }
+
+            // 3. Control del Menú Móvil
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+
+
+            // 4. Funcionalidad de Búsqueda/Filtro con Resaltado
+            searchBar.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                const lowerCaseQuery = query.toLowerCase();
+
+                // Restaurar el contenido original de TODAS las secciones (elimina resaltados)
+                restoreOriginalContent();
+
+                // Si la búsqueda se borra, restaurar navegación y detener
+                if (query === '') {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    const firstNavItem = navItems[0];
+                    if (firstNavItem) {
+                        firstNavItem.classList.add('active');
+                        showSection(firstNavItem.getAttribute('data-target'));
+                    }
+                    return; 
+                }
+                
+                // Deseleccionar todos los ítems del sidebar mientras hay búsqueda
+                navItems.forEach(nav => nav.classList.remove('active'));
+
+                const regex = new RegExp(query, 'gi');
+                let firstMatchFound = false;
+
+                sections.forEach(section => {
+                    const originalHtml = section.getAttribute('data-original-html');
+                    const sectionTextContent = section.textContent.toLowerCase();
+
+                    if (sectionTextContent.includes(lowerCaseQuery)) {
+                        section.style.display = 'block';
+                        section.classList.add('active');
+
+                        if (originalHtml) {
+                            // Reemplaza la coincidencia y envuelve en un span de resaltado
+                            let highlightedHtml = originalHtml.replace(
+                                regex,
+                                (match) => {
+                                    return `<span class="bg-blue-100 font-bold text-blue-800 rounded px-1">${match}</span>`;
+                                }
+                            );
+                            
+                            section.innerHTML = highlightedHtml;
+                            reInitializeAccordionListeners();
+                            
+                            if (!firstMatchFound) {
+                                const contentArea = document.querySelector('.content-area');
+                                contentArea.scrollTop = section.offsetTop - 80;
+                                firstMatchFound = true;
+                            }
+                        }
+
+                    } else {
+                        section.classList.remove('active');
+                        section.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
